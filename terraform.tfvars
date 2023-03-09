@@ -20,9 +20,9 @@
 
 
 # The below three variable must be updated for the PoC
-organization_id         = "873180247571"
-billing_account         = "01660F-E4C304-5C8D2B"
-proxy_access_identities = "user:admin@manishkgaur.altostrat.com"
+organization_id         = "XXXXXXXXX"
+billing_account         = "XXXXX-XXXXX-XXXXXX"
+proxy_access_identities = "user:abc@xyz.com"
 
 
 
