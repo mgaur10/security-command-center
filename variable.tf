@@ -19,43 +19,43 @@
 ##  This is not built for production workload ##
 
 
-variable organization_id {
+variable "organization_id" {
 }
 
-variable billing_account {    
+variable "billing_account" {
 }
 
-variable folder_name {
-}
-
-
-variable demo_project_id {
+variable "folder_name" {
 }
 
 
-variable vpc_network_name {
+variable "demo_project_id" {
 }
 
 
- variable network_zone{
- }
+variable "vpc_network_name" {
+}
 
 
-  variable network_region {
- }
+variable "network_zone" {
+}
+
+
+variable "network_region" {
+}
 
 
 
 variable "proxy_access_identities" {
   description = "Identity who require access to the SQL proxy, and database.  Every identity should be prefixed with the type, for example user:, serviceAccount: and/or group:"
   type        = string
- # default     = "user:abc@xyz.com"
+  # default     = "user:abc@xyz.com"
 }
 
 
 
 
- variable "labels" {
+variable "labels" {
   description = "Labels, provided as a map"
   type        = map(string)
 }
@@ -66,32 +66,32 @@ variable "proxy_access_identities" {
 
 
 variable "name" {
-type        = string
-description = "Name given to the new GKE cluster"
-default     = "online-boutique2"
+  type        = string
+  description = "Name given to the new GKE cluster"
+  default     = "online-boutique2"
 }
 
 variable "namespace" {
-type        = string
-description = "Kubernetes Namespace in which the Online Boutique resources are to be deployed"
-default     = "default"
+  type        = string
+  description = "Kubernetes Namespace in which the Online Boutique resources are to be deployed"
+  default     = "default"
 }
 
 variable "filepath_manifest" {
-type        = string
-description = "Path to the Kubernetes manifest that defines the Online Boutique resources"
-default     = "appmod-module/release/kubernetes-manifests.yaml"
+  type        = string
+  description = "Path to the Kubernetes manifest that defines the Online Boutique resources"
+  default     = "appmod-module/release/kubernetes-manifests.yaml"
 }
 
 variable "memorystore" {
-type        = bool
-description = "If true, Online Boutique's in-cluster Redis cache will be replaced with a Google Cloud Memorystore Redis cache"
-default = false
+  type        = bool
+  description = "If true, Online Boutique's in-cluster Redis cache will be replaced with a Google Cloud Memorystore Redis cache"
+  default     = false
 }
 
 
 variable "global_policy_evaluation_mode" {
-description = "(optional) - Controls the evaluation of a Google-maintained global admission policy\nfor common system-level images. Images not covered by the global\npolicy will be subject to the project admission policy. Possible values: [\"ENABLE\", \"DISABLE\"]"
-type        = string
-default     = "ENABLE"
+  description = "(optional) - Controls the evaluation of a Google-maintained global admission policy\nfor common system-level images. Images not covered by the global\npolicy will be subject to the project admission policy. Possible values: [\"ENABLE\", \"DISABLE\"]"
+  type        = string
+  default     = "ENABLE"
 }
