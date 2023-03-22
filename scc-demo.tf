@@ -188,7 +188,7 @@ resource "google_service_networking_connection" "private_vpc_connection" {
 resource "google_compute_instance" "debian_server" {
   project      = google_project.demo_project.project_id
   name         = "debian-server-vmtd"
-  machine_type = "n2-standard-4"
+  machine_type = "f1-micro"
   zone         = var.network_zone
 
   shielded_instance_config {
@@ -232,7 +232,7 @@ resource "google_compute_instance" "debian_server" {
 resource "google_compute_instance" "ubuntu_server" {
   project      = google_project.demo_project.project_id
   name         = "ubuntu-server"
-  machine_type = "n2-standard-2"
+  machine_type = "f1-micro"
   zone         = var.network_zone
 
   shielded_instance_config {
@@ -284,7 +284,7 @@ resource "google_compute_instance" "ubuntu_server" {
 resource "google_compute_instance" "rhel_server" {
   project      = google_project.demo_project.project_id
   name         = "rhel-server"
-  machine_type = "n2-standard-2"
+  machine_type = "f1-micro"
   zone         = var.network_zone
 
   shielded_instance_config {
@@ -330,7 +330,7 @@ resource "google_compute_instance" "rhel_server" {
 resource "google_compute_instance" "windows_server" {
   project      = google_project.demo_project.project_id
   name         = "windows-server"
-  machine_type = "e2-standard-2"
+  machine_type = "f1-micro"
   zone         = var.network_zone
 
   shielded_instance_config {
@@ -379,7 +379,7 @@ resource "google_compute_instance" "windows_server" {
 resource "google_compute_instance" "centos_server" {
   project      = google_project.demo_project.project_id
   name         = "centos-server"
-  machine_type = "n2-standard-4"
+  machine_type = "f1-micro"
   zone         = var.network_zone
 
   shielded_instance_config {
