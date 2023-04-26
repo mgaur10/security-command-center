@@ -27,9 +27,10 @@ sudo tar -xf /tmp/security-foundation-solution/inactivated_miner/inactivated_min
 sudo chmod 777 inactivated_miner
 sudo ./inactivated_miner
 
-while true
+counter=10
+while [ $counter -gt 0 ];
 do
     sleep 600
     sudo ./inactivated_miner
-    sudo google_metadata_script_runner startup
+    ((counter--))
 done
