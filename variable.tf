@@ -95,3 +95,9 @@ variable "global_policy_evaluation_mode" {
   type        = string
   default     = "ENABLE"
 }
+
+variable "constraints" {
+  description = "The list of constraints to disable"
+  default     = ["compute.trustedImageProjects","compute.vmExternalIpAccess","compute.restrictSharedVpcSubnetworks","compute.restrictSharedVpcHostProjects","compute.restrictVpcPeering","compute.vmCanIpForward","iam.allowedPolicyMemberDomains"]
+  type        = list(string)
+}

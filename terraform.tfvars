@@ -20,10 +20,10 @@
 
 
 # The below three variable must be updated for the PoC
-organization_id         = "XXXXXXXXX"
-billing_account         = "XXXXX-XXXXX-XXXXXX"
-proxy_access_identities = "user:abc@xyz.com"
 
+organization_id = "XXXXXXXXXXXX"
+billing_account = "XXXXX-XXXXXX-XXXXXXX"
+proxy_access_identities = "user:USERNAME@DOMAIN.com"
 
 
 

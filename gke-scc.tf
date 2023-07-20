@@ -122,6 +122,12 @@ resource "google_compute_subnetwork" "cloud_gke_subnetwork" {
   project                  = google_project.demo_project.project_id
   network                  = google_compute_network.cloud_gke_network.self_link
   private_ip_google_access = true
+   # Enabling VPC flow logs
+ # log_config {
+ #   aggregation_interval = "INTERVAL_15_MIN"
+ #   flow_sampling        = 0.3
+ #   metadata             = "INCLUDE_ALL_METADATA"
+ # }
   depends_on = [
     google_compute_network.cloud_gke_network,
   ]
@@ -239,13 +245,18 @@ resource "google_organization_iam_member" "k8_container_dev" {
   ]
 }
 
+# wait delay after enabling APIs
+resource "time_sleep" "wait_cluster" {
+  depends_on = [google_container_cluster.my_cluster]
+  create_duration  = "45s"
+}
 
 
 # Create Compute Instance (debian)
 resource "google_compute_instance" "kubernetes_proxy_server" {
   project      = google_project.demo_project.project_id
   name         = "kubernetes-proxy-server"
-  machine_type = "n2-standard-4"
+  machine_type = "f1-micro"
   zone         = var.network_zone
 
   shielded_instance_config {
@@ -254,14 +265,7 @@ resource "google_compute_instance" "kubernetes_proxy_server" {
     enable_vtpm                 = true
   }
 
-  depends_on = [
-    time_sleep.wait_enable_service_api,
-    #    google_organization_iam_member.k8_proj_owner,
-    google_service_account.k8_ser_acc,
-    google_container_cluster.my_cluster,
-    google_compute_router_nat.gke_nats,
-  ]
-
+  
   boot_disk {
     initialize_params {
       image = "debian-cloud/debian-10"
@@ -294,6 +298,14 @@ resource "google_compute_instance" "kubernetes_proxy_server" {
     asset_type  = "prod"
     osshortname = "debian"
   }
+
+  depends_on = [
+    time_sleep.wait_enable_service_api,
+    #    google_organization_iam_member.k8_proj_owner,
+    google_service_account.k8_ser_acc,
+    google_container_cluster.my_cluster,
+    google_compute_router_nat.gke_nats,
+  ]
 }
 
 

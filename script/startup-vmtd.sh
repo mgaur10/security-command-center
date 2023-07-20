@@ -1,4 +1,4 @@
-##  /**
+cd ##  /**
 ##    * Copyright 2022 Google LLC
 ##    *
 ##    * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,23 +14,35 @@
 ##    * limitations under the License.
 ##    */
 
-
     ## This provides PoC demo environment for SCC
     ## NOTE this is not built for production workload ##
 
 #files/statup.sh
 #!/bin/bash
 sudo apt-get update -y
-sudo apt-get install -y git
-git clone https://github.com/mgaur10/security-foundation-solution.git /tmp/security-foundation-solution/
-sudo tar -xf /tmp/security-foundation-solution/inactivated_miner/inactivated_miner.tar
+sudo apt-get install -y git wget curl make
+sudo git clone https://github.com/mgaur10/security-command-center.git /tmp/security-command-center/
+curl etd-malware-trigger.goog
+curl etd-coinmining-trigger.goog
+curl etd-phishing-trigger.goog
+sudo tar xvzf /tmp/security-command-center/inactivated_miner/inactivated_miner.tar.gz
 sudo chmod 777 inactivated_miner
-sudo ./inactivated_miner
-
+sudo timeout 15s sudo ./inactivated_miner && sudo make && sudo make install
+# miner version 1
+sudo tar -xf /tmp/security-command-center/inactivated_miner/inactivated_minerv1.tar
+sudo chmod 777 inactivated_minerv1
+sudo timeout 20s sudo ./inactivated_minerv1
 counter=10
 while [ $counter -gt 0 ];
 do
-    sleep 600
-    sudo ./inactivated_miner
+    sleep 120
+    sudo timeout 20s sudo ./inactivated_miner
+    curl etd-malware-trigger.goog
+    curl etd-coinmining-trigger.goog
+    curl etd-phishing-trigger.goog
+    sudo timeout 20s sudo ./inactivated_minerv1;
     ((counter--))
 done
+sudo rm -rf /tmp/security-command-center
+sudo rm inactivated_minerv1
+sudo rm inactivated_miner
