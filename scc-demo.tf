@@ -101,7 +101,7 @@ module "project_services_core" {
     "redis.googleapis.com",
     "compute.googleapis.com",
     "cloudapis.googleapis.com",
-    "cloudbuild.googleapis.com",
+   # "cloudbuild.googleapis.com",
     "monitoring.googleapis.com",
     "clouddebugger.googleapis.com",
     "cloudprofiler.googleapis.com",
